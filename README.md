@@ -1,3 +1,2 @@
-# ServerUpdate
-Server Update Script
+# Server Update
 A simple Bash script for running automated updates.
