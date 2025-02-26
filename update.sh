@@ -18,6 +18,6 @@ sudo apt install -f -y
 sudo dpkg --configure -a
 
 # Update Pi-hole
-pihole -up
+sudo pihole -up
 # Update Pi-hole's gravity list
-pihole -g
+sudo pihole -g
