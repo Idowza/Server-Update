@@ -18,6 +18,6 @@ sudo apt install -f -y
 sudo dpkg --configure -a
 
 # Update Pi-hole
-sudo pihole -up
+sudo PIHOLE_SKIP_OS_CHECK=true pihole -up
 # Update Pi-hole's gravity list
 sudo pihole -g
