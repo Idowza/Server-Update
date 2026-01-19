@@ -6,8 +6,8 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # Check if running as root
-if [ "$EUID" -ne 0 ]; then 
-    echo -e "${RED}Please run as root (use sudo)${NC}"
+if [ "$EUID" -eq 0 ]; then 
+    echo -e "${RED}Please do not run as root${NC}"
     exit 1
 fi
 
@@ -23,33 +23,33 @@ run_command() {
     echo # for a newline
 }
 
-run_command "Updating package list" apt update -y
-run_command "Upgrading all installed packages" apt full-upgrade -y
+run_command "Updating package list" sudo apt update -y
+run_command "Upgrading all installed packages" sudo apt full-upgrade -y
 
 # Update Flatpak packages if flatpak is installed
 if command -v flatpak &> /dev/null; then
-    run_command "Updating Flatpak packages" flatpak update -y
+    run_command "Updating Flatpak packages" sudo flatpak update -y
 else
     echo -e "${GREEN}Flatpak not found, skipping.${NC}\n"
 fi
 
 # Update Snap packages if snap is installed
 if command -v snap &> /dev/null; then
-    run_command "Updating Snap packages" snap refresh
+    run_command "Updating Snap packages" sudo snap refresh
 else
     echo -e "${GREEN}Snap not found, skipping.${NC}\n"
 fi
 
-run_command "Cleaning up system" apt autoremove --purge -y
-run_command "Cleaning package cache" apt autoclean -y
-run_command "Fixing any broken dependencies" apt install -f -y
-run_command "Reconfiguring any packages that are not fully installed" dpkg --configure -a
+run_command "Cleaning up system" sudo apt autoremove --purge -y
+run_command "Cleaning package cache" sudo apt autoclean -y
+run_command "Fixing any broken dependencies" sudo apt install -f -y
+run_command "Reconfiguring any packages that are not fully installed" sudo dpkg --configure -a
 
 # Update Pi-hole if pihole is installed
 if command -v pihole &> /dev/null; then
-    # Note: Pi-hole update usually requires root, so sudo is implicit here since we check for root at start
-    run_command "Updating Pi-hole" env PIHOLE_SKIP_OS_CHECK=true pihole -up
-    run_command "Updating Pi-hole's gravity list" pihole -g
+    # Note: Pi-hole update usually requires root
+    run_command "Updating Pi-hole" sudo env PIHOLE_SKIP_OS_CHECK=true pihole -up
+    run_command "Updating Pi-hole's gravity list" sudo pihole -g
 else
     echo -e "${GREEN}Pi-hole not found, skipping.${NC}\n"
 fi
