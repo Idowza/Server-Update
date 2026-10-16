@@ -21,6 +21,13 @@ if ! sudo -v; then
     echo -e "${RED}Error: Sudo authentication failed.${NC}" >&2
     exit 1
 fi
+( while true; do
+    sudo -n -v
+    sleep 60
+    kill -0 "$$" || exit
+done ) 2>/dev/null &
+SUDO_KEEPALIVE_PID=$!
+trap 'kill "$SUDO_KEEPALIVE_PID" 2>/dev/null' EXIT
 echo
 
 # Function to run commands and check for errors
