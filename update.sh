@@ -53,8 +53,10 @@ run_command "Cleaning APT package cache" sudo apt autoclean -y
 
 # --- Flatpak Updates ---
 if command -v flatpak &> /dev/null; then
-    run_command "Updating Flatpak packages" flatpak update -y
-    run_command "Removing unused Flatpak runtimes" flatpak uninstall --unused -y
+    run_command "Updating system Flatpak packages" sudo flatpak update --system -y
+    run_command "Updating user Flatpak packages" flatpak update --user -y
+    run_command "Removing unused system Flatpak runtimes" sudo flatpak uninstall --system --unused -y
+    run_command "Removing unused user Flatpak runtimes" flatpak uninstall --user --unused -y
 else
     echo -e "${YELLOW}Flatpak not found, skipping.${NC}\n"
 fi
@@ -74,16 +76,18 @@ else
     echo -e "${YELLOW}Pi-hole not found, skipping.${NC}\n"
 fi
 
-# --- Final Summary & Reboot Check ---
-if [[ ${#FAILED_STEPS[@]} -eq 0 ]]; then
-    echo -e "${GREEN}System update complete with no errors!${NC}"
-else
-    echo -e "${RED}System update finished, but the following steps had errors:${NC}"
-    for step in "${FAILED_STEPS[@]}"; do
-        echo -e "${RED}  - ${step}${NC}"
-    done
+# --- Reboot Check & Final Summary ---
+if [[ -f /var/run/reboot-required ]]; then
+    echo -e "${YELLOW}*** A system reboot is required to complete the updates. ***${NC}\n"
 fi
 
-if [[ -f /var/run/reboot-required ]]; then
-    echo -e "\n${YELLOW}*** A system reboot is required to complete the updates. ***${NC}"
+if [[ ${#FAILED_STEPS[@]} -eq 0 ]]; then
+    echo -e "${GREEN}System update complete with no errors!${NC}"
+    exit 0
+else
+    echo -e "${RED}System update finished, but the following steps had errors:${NC}" >&2
+    for step in "${FAILED_STEPS[@]}"; do
+        echo -e "${RED}  - ${step}${NC}" >&2
+    done
+    exit 1
 fi
